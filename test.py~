@@ -1,0 +1,47 @@
+from __future__ import division
+from astropy.io import fits
+import numpy as np
+import pandas as pd
+import time
+
+hdul = fits.open('/opt/local/l4astro/rbbg94/cmb_maps/strip_a')
+circ_dat = hdul[1].data
+hdul.close()
+T = circ_dat['T']
+lon = circ_dat['long']
+lat = circ_dat['lat']
+index = circ_dat['index']
+	
+circle = np.zeros((len(T),4))
+circle[:,3] = index
+circle[:,0] = T
+circle[:,1] = lon
+circle[:,2] = lat
+
+sort_ind = circle[:,1].argsort()
+
+circle = circle[sort_ind]
+
+bins = 360
+
+start_1 = time.time()
+
+array = np.linspace(0,bins-1,bins)
+lon_bin = np.array(np.cumsum(pd.cut(circle[:,1], bins = array, right = False, include_lowest = True).value_counts()))
+T_bin_1 = np.array(np.split(circle[:,0], lon_bin))
+T_binn_1 = [np.mean(arr) for arr in T_bin_1]
+
+print time.time()-start_1
+start_2 = time.time()
+
+T_bin_2 = np.zeros((bins, 2))
+for i in range(len(circle[:,1])):
+	iy = int(circle[i,1])
+
+	T_bin_2[iy,1] += circle[i,0]
+	T_bin_2[iy,0] += 1
+
+T_binn_2 = T_bin_2[:,1]/T_bin_2[:,0]
+print time.time()-start_2
+
+print T_binn_1-T_binn_2

@@ -1,0 +1,73 @@
+from __future__ import division
+import numpy as np
+import healpy as hp
+import matplotlib.pyplot as plt
+from astropy.io import fits
+from astrotools import healpytools as hpt
+from circle_finder import circle_finder
+from strip import strip_finder
+from load_file import load_file
+from match_circle_r import match_circle_r
+from match_circle_s import match_circle_s
+from rotate import rotate_to_top
+import time
+
+start = time.time()
+
+CMB_DIST = 14000
+CELL_SIZE = 320
+
+lon = 207.8
+lat = -56.3
+
+rad_lag = 0
+
+no_sims = 100
+bins = 360
+
+ang_rad = np.linspace((1/360)*2*np.pi, np.pi/2, 90*3)
+no_circles = len(ang_rad)
+x_corr = np.zeros((no_sims,no_circles), dtype=complex)
+
+for i in range(no_sims):
+	cmb_map_og = hp.fitsfunc.read_map("/opt/local/l4astro/rbbg94/sims/dx12_v3_smica_cmb_mc_000"+str(i).zfill(2)+"_raw.fits")
+	NSIDE = hp.npix2nside(len(cmb_map_og))
+
+	cmb_map = cmb_map_og
+	#cmb_map = rotate_to_top(cmb_map_og, lon, lat)
+
+	for j in range(no_circles):
+		strip_finder(cmb_map, ang_rad[j], NSIDE)
+		circle_a = load_file('strip_a', bins)
+		circle_b = load_file('strip_b', bins)
+		x_corr[i,j] = match_circle_s(circle_a, circle_b, rad_lag, bins, 720)
+	print i, time.time() - start
+
+ang_rad = ang_rad*(360/(2*np.pi))
+
+mean = np.zeros(no_circles)
+std_dev = np.zeros(no_circles)
+for i in range(no_circles):
+	sum_sq = 0
+	mean[i] = np.mean(x_corr[:,i])
+	for j in range(no_sims):
+		sum_sq += (x_corr[j,i]-mean[i])**2
+	std_dev[i] = np.sqrt(sum_sq/(no_sims-1))
+
+np.savetxt("/opt/local/l4astro/rbbg94/data/ngp_sim_err_"+str(no_sims)+"_high_res.csv", std_dev, delimiter = ',')
+x_corr = np.genfromtxt('/opt/local/l4astro/rbbg94/data/ngp_corr_high_res.csv', dtype = complex, delimiter = ',')
+
+fig, ax = plt.subplots()
+
+ax.errorbar(ang_rad, x_corr, yerr = std_dev, ecolor = 'red')
+ax.set_xlabel(r'$\alpha/^\circ$')
+ax.set_ylabel('$S$')
+ax.annotate('Phase=0$^\circ$', xy = (0.8,0.95), xycoords = 'axes fraction', bbox=dict(facecolor='none', edgecolor='black'))
+ax.axhline(0, color = 'black')
+plt.xticks(np.arange(0, 91, 10))
+plt.xlim(0,90)
+plt.tight_layout()
+
+fig.savefig("/opt/local/l4astro/rbbg94/figures/corr_0_ngp_sim_err_high_res.png", overwrite = True)
+
+plt.show()
