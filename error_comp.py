@@ -11,7 +11,7 @@ ang_rad = np.linspace(1,89,89)
 ratio = lag/sim
 
 mean = np.mean(ratio[:75])
-print mean
+print(mean)
 
 fig, ax = plt.subplots()
 plt.plot(ang_rad, ratio, color = 'k')

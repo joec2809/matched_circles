@@ -4,12 +4,7 @@ import healpy as hp
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from astrotools import healpytools as hpt
-from circle_finder import circle_finder
-from strip import strip_finder
-from load_file import load_file
-from match_circle_r import match_circle_r
-from match_circle_s import match_circle_s
-from rotate import rotate_to_top
+import mc_functions
 import time
 
 start = time.time()
@@ -41,11 +36,11 @@ x_corr = np.zeros((no_circles,bins), dtype=complex)
 
 for i in range(no_circles):
 	rad_lag = 0
-	strip_finder(cmb_map, ang_rad[i], NSIDE)
-	circle_a = load_file("strip_a", bins)
-	circle_b = load_file("strip_b", bins)
+	mc_functions.strip_finder(cmb_map, ang_rad[i], NSIDE)
+	circle_a = mc_functions.load_file("strip_a", bins)
+	circle_b = mc_functions.load_file("strip_b", bins)
 	for j in range(bins):
-		x_corr[i,j] = match_circle_s(circle_a, circle_b, rad_lag, bins, 720)
+		x_corr[i,j] = mc_functions.match_circle_s(circle_a, circle_b, rad_lag, bins, 720)
 		rad_lag += 2*np.pi/360				
 	print(i, time.time()-start)
 	

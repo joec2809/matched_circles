@@ -1,7 +1,7 @@
 from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
-from circle_finder import circle_finder
+import mc_functions
 
 CMB_DIST = 14000
 CELL_SIZE = 320
@@ -9,7 +9,7 @@ CELL_SIZE = 320
 ang_rad = np.arange((1/360)*2*np.pi, np.pi/2, (2*np.pi)/(360))
 data = np.genfromtxt('/opt/local/l4astro/rbbg94/data/ngp_corr.csv', dtype = complex, delimiter = ',')
 peaks_ind= np.argwhere(np.logical_and(ang_rad>=((40/360)*2*np.pi), ang_rad<=((65/360)*2*np.pi)))
-peaks_rad_pred = circle_finder(CELL_SIZE, peaks_ind, 0)
+peaks_rad_pred = mc_functions.circle_finder(CELL_SIZE, CMB_DIST, peaks_ind, 0)
 """ang_rad = np.arange((1/360)*2*np.pi, np.pi/2, (2*np.pi)/(360*3))
 peaks_ind= np.argwhere(np.logical_and(ang_rad>=((40/360)*2*np.pi), ang_rad<=((65/360)*2*np.pi)))"""
 peaks_rad = ang_rad[peaks_ind]

@@ -4,11 +4,7 @@ import healpy as hp
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from astrotools import healpytools as hpt
-from circle_finder import circle_finder
-from strip import strip_finder
-from load_file import load_file
-from match_circle_s import match_circle_s
-from T_m_setup import T_m_setup
+import mc_functions
 
 cmb_map_og = hp.fitsfunc.read_map("/opt/local/l4astro/rbbg94/cmb_maps/planck_data.fits")
 NSIDE = hp.npix2nside(len(cmb_map_og))
@@ -27,7 +23,7 @@ CELL_SIZE = 320
 bins = 360
 m_max = 720
 
-T_m = T_m_setup(m_max, bins)
+T_m = mc_functions.T_m_setup(m_max, bins)
 
 cmb_map = cmb_map_og
 
@@ -35,13 +31,13 @@ x_corr_1 = np.zeros((bins), dtype = complex)
 
 rad_lag = 0
 
-strip_finder(cmb_map, 80*(2*np.pi/360), NSIDE)
+mc_functions.strip_finder(cmb_map, 80*(2*np.pi/360), NSIDE)
 
-circle_a = load_file('strip_a', bins)
-circle_b = load_file('strip_b', bins)
+circle_a = mc_functions.load_file('strip_a', bins)
+circle_b = mc_functions.load_file('strip_b', bins)
 
 for i in range(bins):
-	x_corr_1[i] = match_circle_s(circle_a, circle_b, T_m, m_max, rad_lag)
+	x_corr_1[i] = mc_functions.match_circle_s(circle_a, circle_b, T_m, m_max, rad_lag)
 	rad_lag += 2*np.pi/360
 
 rand_ang = np.pi/np.random.randint(1,20)
@@ -54,13 +50,13 @@ x_corr_2 = np.zeros((bins), dtype = complex)
 
 rad_lag = 0
 
-strip_finder(cmb_map, 80*(2*np.pi/360), NSIDE)
+mc_functions.strip_finder(cmb_map, 80*(2*np.pi/360), NSIDE)
 
-circle_a = load_file('strip_a', bins)
-circle_b = load_file('strip_b', bins)
+circle_a = mc_functions.load_file('strip_a', bins)
+circle_b = mc_functions.load_file('strip_b', bins)
 
 for i in range(bins):
-	x_corr_2[i] = match_circle_s(circle_a, circle_b, T_m, m_max, rad_lag)
+	x_corr_2[i] = mc_functions.match_circle_s(circle_a, circle_b, T_m, m_max, rad_lag)
 	rad_lag += 2*np.pi/360
 
 diff = (x_corr_1-x_corr_2)

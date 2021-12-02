@@ -20,8 +20,6 @@ ang_rad = np.linspace(1,89,89)
 x_corr = np.genfromtxt('/opt/local/l4astro/rbbg94/data/all_ngp_corrs/ngp_corr.csv', dtype=complex, delimiter = ',')[:-1]
 errors = np.genfromtxt('/opt/local/l4astro/rbbg94/data/ngp_sim_err_100_sims.csv', dtype=complex, delimiter = ',')
 
-CMB_DIST = 14000 #Mpc
-
 peaks_ind = find_peaks(x_corr, height=0.12)[0][-3:]
 
 peaks_ang_rad = ang_rad[peaks_ind]*(2*np.pi)/360

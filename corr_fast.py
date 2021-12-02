@@ -45,7 +45,7 @@ for i in range(len(ang_rad)):
 	circle_b = load_file('strip_b')
 	corr[i] = match_circle_s_fast(circle_a, circle_b, rad_lag)
 
-print time.time()-start_time
+print(time.time()-start_time)
 	
 
 ang_rad = ang_rad*(360/(2*np.pi))

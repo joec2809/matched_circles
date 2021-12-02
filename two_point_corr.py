@@ -13,10 +13,10 @@ no_seps = len(ang_sep)
 l_max = 1000
 no_sims = 5
 
-"""c_thetas = np.zeros((no_sims, no_seps))
+c_thetas = np.zeros((no_sims, no_seps))
 
 for j in range(no_sims):
-	cmb_map_og = hp.fitsfunc.read_map("/opt/local/l4astro/rbbg94/sims/dx12_v3_smica_cmb_mc_000"+str(j).zfill(2)+"_raw.fits")
+	cmb_map_og = hp.fitsfunc.read_map("../sims/dx12_v3_smica_cmb_mc_000"+str(j).zfill(2)+"_raw.fits")
 	NSIDE = hp.npix2nside(len(cmb_map_og))
 
 	alms = hp.sphtfunc.map2alm(cmb_map_og, lmax = l_max)
@@ -30,7 +30,7 @@ for j in range(no_sims):
 			leg_poly[i,l] = legendre(l)(np.cos(ang_sep[i]))
 			for m in range(l+1):
 				alm_sep[l,m] = alms_sq[hp.sphtfunc.Alm.getidx(l_max,l,m)]
-		print "i="+str(i), time.time() - start
+		print("i="+str(i), time.time() - start)
 
 	alm_sep = alm_sep*2
 	alm_sep[:,0]/2
@@ -39,11 +39,9 @@ for j in range(no_sims):
 	c_theta = ((1/4)*np.pi)*np.sum(leg_alm, axis = 1)
 	c_theta = c_theta*(10**12)
 	c_thetas[j] = c_theta
-	print "j="+str(j), time.time()-start
+	print("j="+str(j), time.time()-start)
 
-np.savetxt('/opt/local/l4astro/rbbg94/data/two_point_corr.csv', c_thetas, delimiter = ',')"""
-
-c_thetas = np.genfromtxt('/opt/local/l4astro/rbbg94/data/two_point_corr.csv', delimiter = ',')
+np.savetxt('../data/two_point_corr.csv', c_thetas, delimiter = ',')
 
 ave_c_theta = np.mean(c_thetas, axis = 0)
 
@@ -68,5 +66,5 @@ ax.axhline(0, color = 'black')
 plt.xlim(0,180)
 plt.xticks(np.arange(0, 181, 30))
 plt.tight_layout()
-fig.savefig('/opt/local/l4astro/rbbg94/figures/c_theta.png', overwrite = True)
+fig.savefig('../figures/c_theta.png', overwrite = True)
 plt.show()

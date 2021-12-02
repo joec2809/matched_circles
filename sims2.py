@@ -4,13 +4,8 @@ import healpy as hp
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from astrotools import healpytools as hpt
-from circle_finder import circle_finder
-from strip import strip_finder
-from load_file import load_file
-from match_circle_s import match_circle_s
-from rotate import rotate_to_top
-from T_m_setup import T_m_setup
 import time
+import mc_functions
 
 cmb_map_og = hp.fitsfunc.read_map("/opt/local/l4astro/rbbg94/cmb_maps/planck_data.fits")
 NSIDE = hp.npix2nside(len(cmb_map_og))
@@ -48,13 +43,13 @@ vec_lon = 207.8
 vec_lat = cs_lat + 90
 vec = hp.pixelfunc.ang2vec(vec_lon, vec_lat, lonlat=True)
 
-cmb_map_start = rotate_to_top(cmb_map_og*mask_ring, vec_lon, vec_lat)
+cmb_map_start = mc_functions.rotate_to_top(cmb_map_og*mask_ring, vec_lon, vec_lat)
 
 rot_vec = hp.pixelfunc.ang2vec(207.8, 0, lonlat=True)
 
 ang_rad = np.linspace((2*np.pi)/360, np.pi/2, 90)[:-1]
 no_circles = len(ang_rad)
-T_m = T_m_setup(m_max, bins)
+T_m = mc_functions.T_m_setup(m_max, bins)
 
 start = time.time()
 
@@ -80,10 +75,10 @@ for i in range(6):
 	x_corr_0 = np.zeros(no_circles, dtype=complex)
 	for j in range(no_circles):
 		rad_lag = 0
-		strip_finder(cmb_map, ang_rad[j], NSIDE)
-		circle_a = load_file('strip_a', bins)
-		circle_b = load_file('strip_b', bins)
-		x_corr_0[j] = match_circle_s(circle_a, circle_b, T_m, m_max, rad_lag)
+		mc_functions.strip_finder(cmb_map, ang_rad[j], NSIDE)
+		circle_a = mc_functions.load_file('strip_a', bins)
+		circle_b = mc_functions.load_file('strip_b', bins)
+		x_corr_0[j] = mc_functions.match_circle_s(circle_a, circle_b, T_m, m_max, rad_lag)
 	np.savetxt('/opt/local/l4astro/rbbg94/data/cs_corrs_and_errs/lon_'+str(lon)+'_lat_'+str(lat)+'_corr_0_'+str(a)+'.csv', x_corr_0, delimiter = ',')
 
 	x_corr_sims_0 = np.zeros((no_sims,no_circles), dtype=complex)
@@ -91,19 +86,19 @@ for i in range(6):
 		cmb_map_sim = hp.fitsfunc.read_map("/opt/local/l4astro/rbbg94/sims/dx12_v3_smica_cmb_mc_000"+str(j).zfill(2)+"_raw.fits")
 		NSIDE = hp.npix2nside(len(cmb_map_sim))
 		
-		cmb_map_sim = rotate_to_top(cmb_map_sim, vec_lon, vec_lat)
+		cmb_map_sim = mc_functions.rotate_to_top(cmb_map_sim, vec_lon, vec_lat)
 		cmb_map_sim = hpt.rotate_map(cmb_map_sim, rot_vec, np.pi/12+i*rot_ang)
 		for k in range(no_circles):
 			rad_lag = 0
-			strip_finder(cmb_map_sim, ang_rad[k], NSIDE)
-			circle_a = load_file('strip_a', bins)
-			circle_b = load_file('strip_b', bins)
-			x_corr_sims_0[j,k] = match_circle_s(circle_a, circle_b, T_m, m_max, rad_lag)
+			mc_functions.strip_finder(cmb_map_sim, ang_rad[k], NSIDE)
+			circle_a = mc_functions.load_file('strip_a', bins)
+			circle_b = mc_functions.load_file('strip_b', bins)
+			x_corr_sims_0[j,k] = mc_functions.match_circle_s(circle_a, circle_b, T_m, m_max, rad_lag)
 		
-		print "j="+str(j), time.time() - start
+		print("j="+str(j), time.time() - start)
 	std_dev_0 = np.std(x_corr_sims_0, axis = 0)
 	np.savetxt("/opt/local/l4astro/rbbg94/data/cs_corrs_and_errs/lon_"+str(lon)+"_lat_"+str(lat)+"_sim_err_"+str(no_sims)+"_sims_"+str(a)+".csv", std_dev_0, delimiter = ',')
 	a+=1
 	if a == 7:
 		a=4
-	print "i="+str(i), time.time() - start
+	print("i="+str(i), time.time() - start)

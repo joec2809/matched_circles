@@ -4,18 +4,13 @@ import healpy as hp
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from astrotools import healpytools as hpt
-from circle_finder import circle_finder
-from strip import strip_finder
-from load_file import load_file
-from match_circle_s import match_circle_s
-from rotate import rotate_to_top
-from T_m_setup import T_m_setup
 import time
+import mc_functions
 
-cmb_map_og = hp.fitsfunc.read_map("/opt/local/l4astro/rbbg94/cmb_maps/planck_data.fits")
+cmb_map_og = hp.fitsfunc.read_map("../cmb_maps/planck_data.fits")
 NSIDE = hp.npix2nside(len(cmb_map_og))
 
-apo = fits.open("/opt/local/l4astro/rbbg94/cmb_maps/mask_apo5.fits")
+apo = fits.open("../cmb_maps/mask_apo5.fits")
 
 data = apo[1].data
 
@@ -32,7 +27,7 @@ lat = -56.3
 bins = 360
 m_max = 720
 
-T_m = T_m_setup(m_max, bins)
+T_m = mc_functions.T_m_setup(m_max, bins)
 
 cmb_map = cmb_map_og*mask_ring
 #cmb_map = rotate_to_top(cmb_map_og*mask_ring, lon, lat)
@@ -121,16 +116,15 @@ np.savetxt('/opt/local/l4astro/rbbg94/data/cs_90_corr.csv', x_corr, delimiter = 
 # Corr
 ang_rad = np.linspace((1/360)*2*np.pi, np.pi/2, 89)
 x_corr = np.zeros(len(ang_rad), dtype=complex)
-T_m = T_m_setup(m_max, bins)
 
 
 start = time.time()
 for i in range(len(ang_rad)):
 	rad_lag = 0
-	strip_finder(cmb_map, ang_rad[i], NSIDE)
-	circle_a = load_file('strip_a', bins)
-	circle_b = load_file('strip_b', bins)
-	x_corr[i] = match_circle_s(circle_a, circle_b, T_m, m_max, rad_lag)
+	mc_functions.strip_finder(cmb_map, ang_rad[i], NSIDE)
+	circle_a = mc_functions.load_file('strip_a', bins)
+	circle_b = mc_functions.load_file('strip_b', bins)
+	x_corr[i] = mc_functions.match_circle_s(circle_a, circle_b, T_m, m_max, rad_lag)
 	print(i, time.time()-start)
 
-np.savetxt('/opt/local/l4astro/rbbg94/data/ngp_corr_0_thin.csv', x_corr, delimiter = ',')
+np.savetxt('../data/ngp_corr_0_thin.csv', x_corr, delimiter = ',')

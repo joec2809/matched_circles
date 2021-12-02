@@ -4,12 +4,7 @@ import healpy as hp
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from astrotools import healpytools as hpt
-from circle_finder import circle_finder
-from strip import strip_finder
-from load_file import load_file
-from match_circle_r import match_circle_r
-from match_circle_s import match_circle_s
-from rotate import rotate_to_top
+import mc_functions
 
 cmb_map_og = hp.fitsfunc.read_map("/opt/local/l4astro/rbbg94/cmb_maps/planck_data.fits")
 NSIDE = hp.npix2nside(len(cmb_map_og))
@@ -32,14 +27,14 @@ bins = 360
 ang_rad = np.arange((1/360)*2*np.pi, np.pi/2, (2*np.pi)/360)
 x_corr = np.zeros(len(ang_rad), dtype=complex)
 	
-cmb_map = rotate_to_top(np.multiply(cmb_map_og,mask_ring), lon, lat)
+cmb_map = mc_functions.rotate_to_top(np.multiply(cmb_map_og,mask_ring), lon, lat)
 
 for i in range(len(ang_rad)):
-	strip_finder(cmb_map, ang_rad[i], NSIDE)
+	mc_functions.strip_finder(cmb_map, ang_rad[i], NSIDE)
 
-	circle_a = load_file('strip_a', bins)
-	circle_b = load_file('strip_b', bins)
-	x_corr[i] = match_circle_s(circle_a, circle_b, 0, bins, 720)
+	circle_a = mc_functions.load_file('strip_a', bins)
+	circle_b = mc_functions.load_file('strip_b', bins)
+	x_corr[i] = mc_functions.match_circle_s(circle_a, circle_b, 0, bins, 720)
 
 np.savetxt('/opt/local/l4astro/rbbg94/data/ngp_corr_lon_297_lat_33.csv', x_corr, delimiter = ',')
 
