@@ -154,17 +154,11 @@ def T_m_setup(m_max, bins):
 	return T_m
 
 def stack(*args):
-	n = len(args)
-	array = np.zeros(len(args[0]), dtype=complex)
-	for arg in args:
-		array += arg
+	array = np.mean(args, axis = 0)
 
-	return array/n
+	return array
 
 def stack_errors(*args):
-	n = len(args)
-	array = np.zeros(len(args[0]), dtype=complex)
-	for arg in args:
-		array += arg**2
-
-	return np.sqrt(array)/np.sqrt(n)
+	array = np.sqrt(np.sum(np.power(args,2), axis = 0))/len(args)
+		
+	return array

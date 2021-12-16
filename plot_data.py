@@ -14,9 +14,9 @@ plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
 plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
 
 ang_rad = np.linspace(1,89,89)
-x_corr = np.genfromtxt('/opt/local/l4astro/rbbg94/data/ngp_corr_0_thin.csv', dtype=complex, delimiter = ',')
-errors = np.genfromtxt('/opt/local/l4astro/rbbg94/data/ngp_sim_err_100_sims.csv', dtype=complex, delimiter = ',')
-errors = 0
+x_corr = np.genfromtxt('/home/joe/documents/rbbg94/data/all_ngp_corrs/ngp_corr.csv', dtype=complex, delimiter = ',')
+errors = np.genfromtxt('/home/joe/documents/rbbg94/data/ngp_sim_err_100_sims.csv', dtype=complex, delimiter = ',')
+#errors = 0
 
 fig, ax = plt.subplots(figsize = (14,8))
 #ax.errorbar(ang_rad, x_corr, yerr = errors, color = 'k', ecolor = 'k', elinewidth = 0.8, capsize = 3)
