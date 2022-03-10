@@ -3,6 +3,7 @@ from audioop import avg
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.stats import norm
+import mc_functions
 
 SMALL_SIZE = 14
 MEDIUM_SIZE = 16
@@ -19,23 +20,36 @@ ang_rad = np.linspace(1,89,89)
 lon = 0
 diff = 36
 
-for i in range(10):
-    x_corr = np.genfromtxt(f'../data/near_ngp/near_ngp_lon_{lon}.0.csv', dtype=complex, delimiter = ',')
-    errors = np.genfromtxt(f'../data/near_ngp/near_ngp_lon_{lon}.0_100_sims.csv', dtype=complex, delimiter = ',')
+for i in range(1):
+    x_corr = np.genfromtxt(f'../data/ngp_corrs/ngp_corr.csv', dtype=complex, delimiter = ',')
+    errors = np.genfromtxt(f'../data/ngp_corrs/ngp_sim_err_100_sims.csv', dtype=complex, delimiter = ',')
     #errors = 0
+
+    x_corr, errors = mc_functions.array_size_match(x_corr, errors)
 
     pos_points = 0
     neg_points = 0
 
     for i, point in enumerate(x_corr):
-        if point > 0:
+        if point >= 0:
             pos_points += 1
         elif point < 0:
             neg_points += 1
 
+    std_dev = np.std(x_corr)
+    mean = np.real(np.mean(x_corr))
+    
+    z_score = (mean - 0)/(std_dev/np.sqrt(len(x_corr)))
+
+    norm_dist = norm(0, 1)
+
+    prob = norm_dist.cdf(-z_score)
+
+    print(prob)
+
     fig, ax1 = plt.subplots(figsize = (14,8))
     #ax.errorbar(ang_rad, x_corr, yerr = errors, color = 'k', ecolor = 'k', elinewidth = 0.8, capsize = 3)
-    ax1.plot(ang_rad, x_corr[:-1], color = 'k')
+    ax1.plot(ang_rad, x_corr, color = 'k')
     ax1.axhline(y=0, color = 'k')
     ax1.set_xticks(np.arange(0, 91, 10))
     ax1.set_xlim(0,90)
@@ -47,8 +61,10 @@ for i in range(10):
     ax1.fill_between(ang_rad, errors, -errors, color = 'darkgrey')
     plt.tight_layout()
 
-    fig.savefig(f"../figures/near_ngp/near_ngp_lon_{lon}.png", overwrite = True)
+    fig.savefig(f"../figures/lon_297_lat_0.png")
     lon += diff
+
+
 
 
 """

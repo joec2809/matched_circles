@@ -1,7 +1,25 @@
+from click import argument
 import numpy as np
 import mc_functions
 
-array_1 = np.arange(1,10,1)
-array_2 = np.arange(0.1,1,0.1)
+def func(*args):
+    arguments = np.array(args, dtype = object)
+    return arguments
 
-print(mc_functions.stack_errors(array_1, array_2))
+arrays = func(np.arange(1,10,1), np.arange(5,10,1))
+
+lens = []
+
+for i, array in enumerate(arrays):
+    lens.append(len(array))
+
+min_len = min(lens)
+
+out = []
+
+for j, array in enumerate(arrays):
+    out.append(array[:min_len])
+
+final_out = np.array(out)
+
+print(arrays, final_out)

@@ -1,7 +1,9 @@
 from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import norm
 import mc_functions
+
 
 SMALL_SIZE = 14
 MEDIUM_SIZE = 16
@@ -21,15 +23,39 @@ lat = 0
 
 no_dir = 6
 
-for i in range(2*no_dir):
-    x_corr_1 = np.genfromtxt('/home/joe/documents/rbbg94/data/all_ngp_corrs/ngp_corr_0.csv', dtype=complex, delimiter = ',')[:-1]
-    x_corr_2 = np.genfromtxt(f'/home/joe/documents/rbbg94/data/plane_corrs_and_errs/lon_{lon}_lat_{lat}_corr_0.csv', dtype=complex, delimiter = ',')
+for i in range(1):
+    x_corr_1 = np.genfromtxt('../data/lon_297_lat_0_corr_0.csv', dtype=complex, delimiter = ',')
+    x_corr_2 = np.genfromtxt(f'../data/ngp_corrs/ngp_corr.csv', dtype=complex, delimiter = ',')
 
-    errors_1 = np.genfromtxt('/home/joe/documents/rbbg94/data/ngp_sim_err_100_sims.csv', dtype=complex, delimiter = ',')
-    errors_2 = np.genfromtxt(f'/home/joe/documents/rbbg94/data/plane_corrs_and_errs/lon_{lon}_lat_{lat}_sim_err_100_sims.csv', dtype=complex, delimiter = ',')
+    errors_1 = np.genfromtxt('../data/lon_297_lat_0_sim_err_100_sims.csv', dtype=complex, delimiter = ',')
+    errors_2 = np.genfromtxt(f'../data/ngp_corrs/ngp_sim_err_100_sims.csv', dtype=complex, delimiter = ',')
+
+    x_corr_1, x_corr_2, errors_1, errors_2 = mc_functions.array_size_match(x_corr_1, x_corr_2, errors_1, errors_2)
 
     x_corr = mc_functions.stack(x_corr_1, x_corr_2)
     errors = mc_functions.stack_errors(errors_1, errors_2)
+
+    pos_points = 0
+    neg_points = 0
+
+    for i, point in enumerate(x_corr):
+        if point >= 0:
+            pos_points += 1
+        elif point < 0:
+            neg_points += 1
+
+    std_dev = np.std(x_corr)
+    mean = np.real(np.mean(x_corr))
+    
+    z_score = (mean - 0)/(std_dev)
+
+    norm_dist = norm(0, 1)
+
+    prob = norm_dist.cdf(-z_score)
+
+    print(prob)
+
+
 
     fig, ax = plt.subplots(figsize = (14,8))
     #ax.errorbar(ang_rad, x_corr, yerr = errors, color = 'k', ecolor = 'k', elinewidth = 0.8, capsize = 3)
@@ -40,14 +66,12 @@ for i in range(2*no_dir):
     ax.set_xlabel(r'$\alpha/^\circ$')
     ax.set_ylabel('$S$')
     ax.annotate('Phase=0$^\circ$', xy = (0.8,0.95), xycoords = 'axes fraction', bbox=dict(facecolor='none', edgecolor='black'))
+    ax.annotate(f"Number of positive points = {pos_points} \nNumber of negative points = {neg_points}", xy = (0.6,0.2), xycoords = 'axes fraction', bbox=dict(facecolor='none', edgecolor='black'))
     ax.fill_between(ang_rad, 2*errors, -2*errors, color = 'lightgrey')
     ax.fill_between(ang_rad, errors, -errors, color = 'darkgrey')
+
     plt.tight_layout()
 
-    fig.savefig(f'/home/joe/documents/rbbg94/figures/ngp_lon_{lon}_lat_{lat}_stack.png')
+    plt.show()
 
-    if (-1)**i == 1:
-        lat += 45
-    elif (-1)**i == -1:
-        lat -= 45
-        lon += 30
+    fig.savefig(f'../figures/ngp_lon_297_lat_0_stack.png')

@@ -162,3 +162,20 @@ def stack_errors(*args):
 	array = np.sqrt(np.sum(np.power(args,2), axis = 0))/len(args)
 		
 	return array
+
+def array_size_match(*args):
+	arrays = np.array(args, dtype = object)
+	lens = []
+	
+	for i, array in enumerate(arrays):
+		lens.append(len(array))
+	min_len = min(lens)
+
+	out = []
+
+	for j, array in enumerate(arrays):
+		out.append(array[:min_len])
+
+	final_out = np.array(out)
+
+	return final_out

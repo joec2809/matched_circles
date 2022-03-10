@@ -16,7 +16,7 @@ m_max = 720
 rad_lag = 0
 
 lon = 0
-lat = 88
+lat = 90
 no_dir = 10
 rot_ang = 2*np.pi/no_dir
 
