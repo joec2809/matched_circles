@@ -1,18 +1,17 @@
 from __future__ import division
 import numpy as np
 import healpy as hp
-import matplotlib.pyplot as plt
+import pandas as pd
 from astropy.io import fits
-from astrotools import healpytools as hpt
 import mc_functions
 import time
 
 start = time.time()
 
-cmb_map_og = hp.fitsfunc.read_map("/opt/local/l4astro/rbbg94/cmb_maps/planck_data.fits")
+cmb_map_og = hp.fitsfunc.read_map("../cmb_maps/planck_data.fits")
 NSIDE = hp.npix2nside(len(cmb_map_og))
 
-apo = fits.open("/opt/local/l4astro/rbbg94/cmb_maps/mask_apo5.fits")
+apo = fits.open("../cmb_maps/mask_apo5.fits")
 
 data = apo[1].data
 
@@ -23,30 +22,34 @@ mask_ring = hp.pixelfunc.reorder(mask_nest, inp = 'nested', out = 'ring', n2r = 
 CMB_DIST = 14000
 CELL_SIZE = 320
 
-lon = 207.8
-lat = -56.3
+lon = 144.0
+lat = 85.0
+
+mode = 'p3'
 
 bins = 360
+m_max = 720
 
-cmb_map = cmb_map_og*mask_ring
+pred = pd.read_csv(f"../data/pred_angs/omega_{mode}_reflection.txt", delim_whitespace=True, header = 1, index_col=0)
 
-ang_rad = np.linspace((1/360)*2*np.pi, np.pi/2, 90)
-no_circles = len(ang_rad)
-x_corr = np.zeros((no_circles,bins), dtype=complex)
+ang_rads = np.array(pred['alpha'])[~np.isnan(pred['alpha'])]
 
-for i in range(no_circles):
-	rad_lag = 0
-	mc_functions.strip_finder(cmb_map, ang_rad[i], NSIDE)
-	circle_a = mc_functions.load_file("strip_a", bins)
-	circle_b = mc_functions.load_file("strip_b", bins)
-	for j in range(bins):
-		x_corr[i,j] = mc_functions.match_circle_s(circle_a, circle_b, rad_lag, bins, 720)
-		rad_lag += 2*np.pi/360				
-	print(i, time.time()-start)
-	
-	
-ang_rad = ang_rad*(360/(2*np.pi))
+x_corrs = np.genfromtxt(f'../data/grid_search/mode_{mode}/{mode}_lon_{lon}_lat_{lat}.csv', dtype=complex, delimiter = ',')
 
-x_corr = np.swapaxes(x_corr,0,1)
-for i in range(bins):
-	np.savetxt('/opt/local/l4astro/rbbg94/data/ngp_corr_'+str(i)+'.csv', x_corr[i], delimiter = ',')
+
+ang_rad = ang_rads[np.argmax(np.real(x_corrs))]
+x_corr = np.zeros(bins, dtype=complex)
+
+cmb_map = mc_functions.rotate_to_top(cmb_map_og*mask_ring, lon, lat)
+
+T_m = mc_functions.T_m_setup(m_max, bins)
+
+rad_lag = 0
+mc_functions.strip_finder(cmb_map, ang_rad, NSIDE)
+circle_a = mc_functions.load_file("strip_a", bins)
+circle_b = mc_functions.load_file("strip_b", bins)
+for j in range(bins):
+	x_corr[j] = mc_functions.match_circle_s(circle_a, circle_b, T_m, m_max, np.radians(rad_lag))
+	rad_lag += 360/bins				
+
+np.savetxt(f'../data/p3_lon_{lon}_lat_{lat}_lags.csv', x_corr, delimiter = ',')

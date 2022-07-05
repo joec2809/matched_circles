@@ -106,7 +106,7 @@ def load_file(fname, bins):
 
 	array = np.linspace(0,bins-1,bins)
 	lon_bin = np.array(np.cumsum(pd.cut(circle[:,1], bins = array, right = False, include_lowest = True).value_counts()))
-	T_bin = np.array(np.split(circle[:,0], lon_bin))
+	T_bin = np.array(np.split(circle[:,0], lon_bin), dtype = object)
 	T_binn = [np.mean(arr) for arr in T_bin]
 
 	return T_binn

@@ -1,9 +1,7 @@
 from __future__ import division
 import numpy as np
 import healpy as hp
-import matplotlib.pyplot as plt
 from astropy.io import fits
-from astrotools import healpytools as hpt
 import time
 import mc_functions
 
@@ -29,8 +27,8 @@ m_max = 720
 
 T_m = mc_functions.T_m_setup(m_max, bins)
 
-cmb_map = cmb_map_og*mask_ring
-#cmb_map = rotate_to_top(cmb_map_og*mask_ring, lon, lat)
+#cmb_map = cmb_map_og*mask_ring
+cmb_map = mc_functions.rotate_to_top(cmb_map_og*mask_ring, lon, lat)
 
 
 # Corr
